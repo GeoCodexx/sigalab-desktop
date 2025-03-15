@@ -1,6 +1,8 @@
-require('dotenv').config();
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
+require("dotenv").config();
+const { app, BrowserWindow, ipcMain } = require("electron");
+const axios = require("axios");
+const https = require("https");
+const path = require("path");
 
 let mainWindow;
 
@@ -9,7 +11,9 @@ app.whenReady().then(() => {
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: false, // Desactiva para mayor seguridad
+      contextIsolation: true, // Activa para seguridad
+      preload: path.join(__dirname, "preload.js"), // Asegurar la ruta correcta
     },
   });
 
@@ -17,16 +21,49 @@ app.whenReady().then(() => {
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, 'app-react/dist/index.html'));
+    mainWindow.loadFile(path.join(__dirname, "app-react/dist/index.html"));
   }
 
-  mainWindow.on('closed', () => {
+  mainWindow.on("closed", () => {
     mainWindow = null;
   });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+//Permitir Certificados Autofirmados en Electron
+app.on(
+  "certificate-error",
+  (event, webContents, url, error, certificate, callback) => {
+    event.preventDefault(); // Evita que Electron bloquee la conexión
+    callback(true); // Acepta el certificado autofirmado
+  }
+);
+
+// Manejador para capturar huella dactilar
+ipcMain.handle("capture-fingerprint", async () => {
+  try {
+    const agent = new https.Agent({ rejectUnauthorized: false }); // Ignorar certificados no confiables
+    /*const response = await axios.post("https://localhost:8443/SGIFPCapture", {
+      format: "ISO19794",
+    });*/
+    const response = await axios.post(
+      "https://localhost:8443/SGIFPCapture",
+      { format: "ISO19794" },
+      {
+        httpsAgent: agent,
+        headers: {
+          Origin: "https://localhost", // Agregar encabezado "Origin"
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error al capturar huella:", error);
+    return { error: "Error al capturar la huella" };
+  }
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
     app.quit();
   }
 });

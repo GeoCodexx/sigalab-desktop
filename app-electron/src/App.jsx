@@ -9,6 +9,8 @@ const App = () => {
   const [userData, setUserData] = useState(null);
   const [scanAnimation, setScanAnimation] = useState(false);
 
+  const [fingerprint, setFingerprint] = useState(null);
+
   // Actualizar el reloj cada segundo
   useEffect(() => {
     const timerID = setInterval(() => tick(), 1000);
@@ -69,6 +71,12 @@ const App = () => {
       setFingerprintStatus('Esperando huella...');
     }, 3000); // Simula un proceso de escaneo de 3 segundos
   };*/
+
+  const captureFingerprint = async () => {
+    const result = await window.electron.invoke("capture-fingerprint");
+    setFingerprint(result);
+    alert(JSON.stringify(result));
+  };
 
   const handleFingerprintScan = async () => {
     setFingerprintStatus("Escaneando...");
@@ -137,9 +145,13 @@ const App = () => {
         <div className="right-column">
           <div
             className={`fingerprint-section ${scanAnimation ? "scanning" : ""}`}
-            onClick={handleFingerprintScan}
+            //onClick={handleFingerprintScan}
+            onClick={captureFingerprint}
           >
-            <div className="fingerprint-icon">🖐️</div>
+            {/* <div className="fingerprint-icon">🖐️</div> */}
+            <div className="fingerprint-icon">
+              {fingerprint && <pre>{JSON.stringify(fingerprint, null, 2)}</pre>}
+            </div>
             <p className="fingerprint-status">{fingerprintStatus}</p>
           </div>
           {userData && (
