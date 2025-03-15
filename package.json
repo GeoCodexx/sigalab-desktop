@@ -1,0 +1,40 @@
+{
+  "name": "sigalab-desktop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"cd app-electron && npx vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "build": "vite build --outDir=../dist && electron-builder",
+    "start": "electron ."
+  },
+  "build": {
+    "appId": "com.miapp.electron",
+    "productName": "MiApp",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "main.js",
+      "node_modules/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "icon.ico"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "electron": "^35.0.1",
+    "electron-builder": "^25.1.8",
+    "wait-on": "^8.0.3"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}

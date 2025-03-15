@@ -1,0 +1,175 @@
+/* Estilo general */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #121212; /* Fondo oscuro */
+  color: #e0e0e0; /* Texto claro */
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Menú Superior */
+.menu-bar {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  background-color: #1e1e1e; /* Tono oscuro para el menú */
+  padding: 10px 0;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.menu-bar button {
+  background-color: transparent;
+  border: none;
+  color: #bdbdbd; /* Texto claro */
+  font-size: 16px;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease;
+}
+
+.menu-bar button:hover {
+  background-color: #333; /* Fondo más claro al pasar el mouse */
+}
+
+/* Contenedor de Dos Columnas */
+.content-container {
+  display: flex;
+  flex: 1;
+  padding: 20px;
+  gap: 50px; /* Espacio entre las columnas */
+}
+
+.left-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.right-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Reloj Digital */
+.clock-container {
+  text-align: center;
+}
+
+.clock {
+  font-size: 6rem;
+  font-weight: bold;
+  color: #bb86fc; /* Color morado claro para el reloj */
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.date {
+  font-size: 1.5rem;
+  color: #e0e0e0; /* Texto claro */
+  margin-top: 10px;
+}
+
+/* Botones de Ingreso y Salida */
+.buttons-container {
+  margin-top: 50px;
+  display: flex;
+  gap: 20px;
+}
+
+.check-in-button,
+.check-out-button {
+  font-size: 2rem;
+  padding: 20px 40px;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.check-in-button {
+  background-color: #03dac6; /* Verde cian */
+}
+
+.check-out-button {
+  background-color: #cf6679; /* Rojo claro */
+}
+
+.check-in-button:hover,
+.check-out-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Sección de Huella Dactilar */
+.fingerprint-section {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 250px;
+  height: 250px;
+  background-color: #ffffff; /* Fondo muy claro para visualizar la huella */
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fingerprint-section:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+.fingerprint-section.scanning::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1));
+  animation: scan 3s linear;
+}
+
+@keyframes scan {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.fingerprint-icon {
+  font-size: 4rem;
+  color: #121212; /* Color oscuro para el ícono */
+}
+
+.fingerprint-status {
+  margin-top: 10px;
+  font-size: 1.2rem;
+  color: #121212; /* Texto oscuro */
+}
+
+/* Datos del Usuario */
+.user-data {
+  margin-top: 20px;
+  text-align: center;
+  color: #e0e0e0;
+}
+
+.user-data p {
+  margin: 5px 0;
+}
