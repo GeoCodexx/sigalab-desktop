@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./App.css";
+import WaitingFingerImage from "./assets/waiting_finger.gif";
 
 const App = () => {
   const [time, setTime] = useState(new Date());
@@ -8,8 +9,7 @@ const App = () => {
   );
   const [userData, setUserData] = useState(null);
   const [scanAnimation, setScanAnimation] = useState(false);
-
-  const [fingerprint, setFingerprint] = useState(null);
+  const [fingerprintImage, setFingerprintImage] = useState(null);
 
   // Actualizar el reloj cada segundo
   useEffect(() => {
@@ -31,128 +31,120 @@ const App = () => {
     return time.toLocaleDateString("es-ES", options);
   };
 
-  const handleRegisterFingerprint = () => {
-    alert("Redirigiendo a la pantalla de registro de huella...");
-  };
-
-  const handleReportIssue = () => {
-    alert("Redirigiendo a la pantalla de reporte de problemas...");
-  };
-
-  const handleRefreshApp = () => {
-    window.location.reload();
-  };
-
-  const handleExitApp = () => {
-    window.close();
-  };
-
-  const handleCheckIn = () => {
-    alert("Marcando INGRESO...");
-  };
-
-  const handleCheckOut = () => {
-    alert("Marcando SALIDA...");
-  };
-
-  /*const handleFingerprintScan = () => {
-    setFingerprintStatus('Escaneando...');
-    setScanAnimation(true); // Iniciar animación de escaneo
-    setTimeout(() => {
-      setScanAnimation(false); // Detener animación de escaneo
-      const success = Math.random() > 0.2; // Simular éxito o error aleatorio
-      if (success) {
-        setUserData({ name: 'Juan Pérez', id: '12345' });
-        alert('Registro exitoso: Asistencia marcada.');
-      } else {
-        setUserData(null);
-        alert('Error: No se pudo registrar la asistencia.');
-      }
-      setFingerprintStatus('Esperando huella...');
-    }, 3000); // Simula un proceso de escaneo de 3 segundos
-  };*/
-
-  const captureFingerprint = async () => {
-    const result = await window.electron.invoke("capture-fingerprint");
-    setFingerprint(result);
-    alert(JSON.stringify(result));
-  };
-
-  const handleFingerprintScan = async () => {
+  /*const handleFingerprintScan = async () => {
     setFingerprintStatus("Escaneando...");
-    setScanAnimation(true); // Iniciar animación de escaneo
-    try {
-      // Escanear la huella usando el SDK
-      // const fingerprintTemplate = await scanFingerprint();
+    setScanAnimation(true);
 
-      // Enviar la plantilla a la API para validarla
-      /*const response = await fetch('https://tu-api.com/validate-fingerprint', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ template: fingerprintTemplate }),
-      });*/
-      setTimeout(() => {
-        /*const result = await response.json();*/
-        setScanAnimation(false); // Detener animación de escaneo
-        const success = Math.random() > 0.2; // Simular éxito o error aleatorio
-        /*if (result.success) {*/
-        if (success) {
-          /*setUserData(result.user); // Mostrar datos del usuario
-          alert(`Registro exitoso: ${result.message}`);*/
-          setUserData({ name: "Juan Pérez", id: "12345" });
-          alert("Registro exitoso: Asistencia marcada.");
-        } else {
-          /*alert(`Error: ${result.message}`);*/
-          setUserData(null);
-          alert("Error: No se pudo registrar la asistencia.");
-        }
-      }, 3000); // Simula un proceso de escaneo de 3 segundos
+    try {
+      const response = await window.electron.invoke("capture-fingerprint"); // Llamada a backend
+      if (response.ErrorCode === 0 && response.BMPBase64) {
+        setFingerprintImage(`data:image/bmp;base64,${response.BMPBase64}`);
+        setUserData({ name: "Juan Pérez", id: "12345" }); // Simulación de usuario
+        alert("Registro exitoso: Asistencia marcada.");
+      } else {
+        setFingerprintImage(null);
+        setUserData(null);
+        alert("Error al escanear la huella.");
+      }
     } catch (error) {
       alert("Error: No se pudo escanear la huella.");
     }
-    setFingerprintStatus("Esperando huella...");
-  };
 
+    setScanAnimation(false);
+    setFingerprintStatus("Esperando huella...");
+  };*/
+  const handleFingerprintScan = async () => {
+    setFingerprintStatus("Escaneando...");
+    setScanAnimation(true);
+    setFingerprintImage(null); // Limpia la imagen anterior
+
+    try {
+      const response = await window.electron.invoke("capture-fingerprint"); // Simulación del backend
+
+      // Simular tiempo de escaneo de 3 segundos antes de mostrar la huella
+      setTimeout(() => {
+        setScanAnimation(false);
+        if (response.ErrorCode === 0 && response.BMPBase64) {
+          setFingerprintImage(`data:image/bmp;base64,${response.BMPBase64}`);
+          setUserData({ name: "Juan Pérez", id: "12345" }); // Simulación de usuario
+          setFingerprintStatus("Huella escaneada con éxito");
+          //alert("Registro exitoso: Asistencia marcada.");
+        } else {
+          setUserData(null);
+          setFingerprintStatus("Error al escanear la huella");
+          //alert("Error al escanear la huella.");
+        }
+      }, 2000);
+    } catch (error) {
+      setScanAnimation(false);
+      setFingerprintStatus("Error: No se pudo escanear la huella.");
+      //alert("Error: No se pudo escanear la huella.");
+    }
+  };
   return (
     <div className="app-container dark-theme">
-      {/* Menú Superior */}
       <div className="menu-bar">
-        <button onClick={handleRegisterFingerprint}>Registrar Huella</button>
-        <button onClick={handleReportIssue}>Reportar Problema</button>
-        <button onClick={handleRefreshApp}>Refrescar/Reiniciar</button>
-        <button onClick={handleExitApp}>Salir</button>
+        <button onClick={() => alert("Registrar Huella")}>
+          Registrar Huella
+        </button>
+        <button onClick={() => alert("Reportar Problema")}>
+          Reportar Problema
+        </button>
+        <button onClick={() => window.location.reload()}>Refrescar</button>
+        <button onClick={() => window.close()}>Salir</button>
       </div>
 
-      {/* Contenedor de Dos Columnas */}
       <div className="content-container">
-        {/* Columna Izquierda: Reloj, Fecha y Botones */}
         <div className="left-column">
           <div className="clock-container">
             <h1 className="clock">{time.toLocaleTimeString()}</h1>
             <p className="date">{getFormattedDate()}</p>
           </div>
-          <div className="buttons-container">
-            <button className="check-in-button" onClick={handleCheckIn}>
+          {/*<div className="buttons-container">
+            <button
+              className="check-in-button"
+              onClick={() => alert("Marcando INGRESO")}
+            >
               INGRESO
             </button>
-            <button className="check-out-button" onClick={handleCheckOut}>
+            <button
+              className="check-out-button"
+              onClick={() => alert("Marcando SALIDA")}
+            >
               SALIDA
             </button>
-          </div>
+          </div>*/}
         </div>
 
-        {/* Columna Derecha: Sección de Huella Dactilar */}
         <div className="right-column">
-          <div
+          {/*<div
             className={`fingerprint-section ${scanAnimation ? "scanning" : ""}`}
-            //onClick={handleFingerprintScan}
-            onClick={captureFingerprint}
+            onClick={handleFingerprintScan}
+          >*/}
+          <p className="fingerprint-status">{fingerprintStatus}</p>
+
+          <div
+            className={`fingerprint-section ${
+              scanAnimation ? "scanning" : ""
+            } ${fingerprintImage ? "fingerprint-detected" : ""}`}
+            onClick={handleFingerprintScan}
           >
-            {/* <div className="fingerprint-icon">🖐️</div> */}
             <div className="fingerprint-icon">
-              {fingerprint && <pre>{JSON.stringify(fingerprint, null, 2)}</pre>}
+              {fingerprintImage ? (
+                <img
+                  src={fingerprintImage}
+                  alt="Huella escaneada"
+                  className="fingerprint-image"
+                />
+              ) : (
+                <img
+                  src={WaitingFingerImage}
+                  alt="Imagen de espera"
+                  className="fingerprint-image"
+                />
+              )}
             </div>
-            <p className="fingerprint-status">{fingerprintStatus}</p>
+            {/* <p className="fingerprint-status">{fingerprintStatus}</p> */}
           </div>
           {userData && (
             <div className="user-data">
@@ -166,6 +158,9 @@ const App = () => {
           )}
         </div>
       </div>
+      <footer className="footer">
+        <p>&copy; {new Date().getFullYear()} Developed by GeoCodexx Design</p>
+      </footer>
     </div>
   );
 };

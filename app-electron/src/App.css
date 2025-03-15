@@ -66,9 +66,12 @@ body {
 }
 
 .clock {
+  font-family: monospace; /* Fuente monoespaciada */
   font-size: 6rem;
   font-weight: bold;
-  color: #bb86fc; /* Color morado claro para el reloj */
+  /*letter-spacing: 3px;*/
+  /*color: #bb86fc; /* Color morado claro para el reloj */
+  color: #03bba9;
   text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
 }
 
@@ -117,31 +120,65 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 250px;
+  width: 188px;
   height: 250px;
-  background-color: #ffffff; /* Fondo muy claro para visualizar la huella */
+  /*background-color: #ffffff; /* Fondo muy claro para visualizar la huella */
+  background-color: #222; /* Fondo oscuro inicial */
+  border: 2px solid #888;
   border-radius: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, background-color 0.3s, box-shadow 0.3s ease;
+}
+
+.fingerprint-section.fingerprint-detected {
+  background-color: #ffffff; /* Cambia a azul cuando se escanea */
+  /*border-color: #00a8ff;*/
 }
 
 .fingerprint-section:hover {
-  transform: scale(1.05);
+  transform: scale(1.03);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 .fingerprint-section.scanning::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.1));
-  animation: scan 3s linear;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 0, 0, 0.1),
+    rgba(255, 0, 0, 0.6),
+    rgba(255, 0, 0, 0.1)
+  );
+  /*background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.3),
+    rgba(0, 0, 0, 0.1)
+  );*/
+  animation: scan 2s linear;
 }
+
+/*.fingerprint-section.scanning::before {
+  content: "";
+  position: absolute;
+  top: -100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 0, 0, 0.1),
+    rgba(255, 0, 0, 0.5),
+    rgba(255, 0, 0, 0.1)
+  );
+  animation: scanEffect 2s linear infinite;
+}*/
 
 @keyframes scan {
   0% {
@@ -152,15 +189,28 @@ body {
   }
 }
 
+.fingerprint-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 5px;
+}
+
 .fingerprint-icon {
-  font-size: 4rem;
-  color: #121212; /* Color oscuro para el ícono */
+  /*font-size: 4rem;*/
+  /* color: #121212; /* Color oscuro para el ícono */
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fingerprint-status {
   margin-top: 10px;
   font-size: 1.2rem;
-  color: #121212; /* Texto oscuro */
+  /*color: #121212; /* Texto oscuro */
+  color: #e2e2e2;
 }
 
 /* Datos del Usuario */
@@ -172,4 +222,16 @@ body {
 
 .user-data p {
   margin: 5px 0;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background-color: #222; /* Color oscuro */
+  color: #ffffff96; /* Texto blanco */
+  text-align: center;
+  /*padding: 2px 0;*/
+  font-size: 12px;
+  /*font-weight: bold;*/
 }

@@ -9,7 +9,7 @@ let mainWindow;
 app.whenReady().then(() => {
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 700,
     webPreferences: {
       nodeIntegration: false, // Desactiva para mayor seguridad
       contextIsolation: true, // Activa para seguridad
@@ -23,6 +23,9 @@ app.whenReady().then(() => {
   } else {
     mainWindow.loadFile(path.join(__dirname, "app-react/dist/index.html"));
   }
+  //Para abrir el devtool del navegador.
+  //mainWindow.webContents.openDevTools();
+  mainWindow.setMenuBarVisibility(false); // Barra Menu Oculto
 
   mainWindow.on("closed", () => {
     mainWindow = null;
