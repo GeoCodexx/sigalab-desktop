@@ -21,7 +21,7 @@ app.whenReady().then(() => {
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(__dirname, "app-react/dist/index.html"));
+    mainWindow.loadFile(path.join(__dirname, "app-electron/dist/index.html"));
   }
   //Para abrir el devtool del navegador.
   //mainWindow.webContents.openDevTools();
