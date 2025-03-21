@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   TextField,
   Button,
@@ -10,6 +10,8 @@ import {
   Typography,
 } from "@mui/material";
 import WaitingFingerImage from "../assets/waiting_finger.gif";
+import LoginImage from "../assets/6184159_3094350.svg";
+import { authenticateUser, dataUser } from "../services/user";
 
 const Register = ({ setActiveView }) => {
   const [fingerprintImage, setFingerprintImage] = useState(null);
@@ -52,20 +54,21 @@ const Register = ({ setActiveView }) => {
     */
     if (!credentials.username) {
       newErrors.username = "El usuario es requerido";
-    } else if (credentials.username.length < 5) {
+    } /*else if (credentials.username.length < 5) {
       newErrors.username = "Debe tener al menos 5 caracteres";
-    }
+    }*/
 
     if (!credentials.password) {
       newErrors.password = "La contraseña es requerida";
-    } else if (credentials.password.length < 5) {
+    } /*else if (credentials.password.length < 5) {
       newErrors.password = "Debe tener al menos 5 caracteres";
-    }
+    }*/
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
+  /*Priemra version de prueba con simulacion de carga
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -92,6 +95,46 @@ const Register = ({ setActiveView }) => {
       setLoading(false);
       setErrors({ general: "Error en la autenticación" });
     }
+  };*/
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    setLoading(true);
+    setErrors({});
+
+    try {
+      // Llamada real a la API para autenticar usuario
+      const response = await authenticateUser(
+        credentials.username,
+        credentials.password
+      );
+      console.log(response);
+      if (response.token) {
+        // Guardar el token en localStorage para usarlo en el registro de huella
+        localStorage.setItem("authTokenDesktop", response.token);
+        setAuthenticated(true);
+
+        // Verificar si el usuario ya tiene una huella registrada
+        const userInfo = await dataUser();
+        //console.log(userInfo)
+        if (userInfo.fingerprintimage) {
+          setHasFingerprint(true);
+          setUserData({});
+        } else {
+          setHasFingerprint(false);
+          setUserData(userInfo);
+        }
+      } else {
+        setErrors({ general: "No se recibió token de autenticación" });
+      }
+    } catch (error) {
+      setErrors({
+        general: error.message || "Usuario o contraseña incorrectos",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleFingerprintScan = async () => {
@@ -110,19 +153,17 @@ const Register = ({ setActiveView }) => {
         setScanAnimation(false);
         if (response.ErrorCode === 0 && response.BMPBase64) {
           setFingerprintImage(`data:image/bmp;base64,${response.BMPBase64}`);
-          setUserData({ name: "Juan Pérez", id: "12345" }); // Simulación de usuario
+          
           setFingerprintStatus({
             type: "success",
             message: "Huella escaneada con éxito",
           });
-          //alert("Registro exitoso: Asistencia marcada.");
         } else {
           setUserData(null);
           setFingerprintStatus({
             type: "error",
             message: `Error al escanear huella. COD: ${response.ErrorCode}`,
           });
-          //alert("Error al escanear la huella.");
         }
       }, 2000);
     } catch (error) {
@@ -131,9 +172,17 @@ const Register = ({ setActiveView }) => {
         type: "error",
         message: "Error Server: No se pudo escanear la huella.",
       });
-      //alert("Error: No se pudo escanear la huella.");
     }
   };
+
+  // Redirigir a Home si el usuario no existe o ya tiene huella
+  useEffect(() => {
+    if (hasFingerprint === true) {
+      setTimeout(() => {
+        setActiveView("home"); // Cambia la vista a Home
+      }, 2000);
+    }
+  }, [hasFingerprint, setActiveView]);
 
   return (
     <Grid2 container spacing={2}>
@@ -337,9 +386,10 @@ const Register = ({ setActiveView }) => {
                 </>
               )
             ) : (
-              <Typography variant="body1">
-                Autentíquese para continuar
-              </Typography>
+              // <Typography variant="body1">
+              //   Autentíquese para continuar
+              // </Typography>
+              <img src={LoginImage} alt="Login Image" width={200} />
             )}
           </CardContent>
         </Card>
