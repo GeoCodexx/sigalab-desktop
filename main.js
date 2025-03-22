@@ -3,6 +3,7 @@ const { app, BrowserWindow, ipcMain } = require("electron");
 const axios = require("axios");
 const https = require("https");
 const path = require("path");
+const querystring = require("querystring"); // Módulo para convertir objetos a URL-encoded
 
 let mainWindow;
 
@@ -24,7 +25,7 @@ app.whenReady().then(() => {
     mainWindow.loadFile(path.join(__dirname, "app-electron/dist/index.html"));
   }
   //Para abrir el devtool del navegador.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   mainWindow.setMenuBarVisibility(false); // Barra Menu Oculto
 
   mainWindow.on("closed", () => {
@@ -62,6 +63,41 @@ ipcMain.handle("capture-fingerprint", async () => {
   } catch (error) {
     console.error("Error al capturar huella:", error);
     return { error: "Error al capturar la huella" };
+  }
+});
+
+// Manejador para comparar huellas dactilares
+ipcMain.handle("match-fingerprint", async (_, { template1, template2 }) => {
+  try {
+    /* console.log("Comparando huellas...");
+    console.log("Template1 (capturado):", template1?.substring(0, 50), "..."); // Imprimir primeros 50 caracteres
+    console.log(
+      "Template2 (base de datos):",
+      template2?.substring(0, 50),
+      "..."
+    );*/
+
+    const agent = new https.Agent({ rejectUnauthorized: false }); // Ignorar SSL
+
+    // Convertir los parámetros a formato x-www-form-urlencoded
+    const payload = querystring.stringify({ template1, template2 });
+
+    const response = await axios.post(
+      "https://localhost:8443/SGIMatchScore",
+      payload,
+      //{ template1, template2 },
+      {
+        httpsAgent: agent,
+        headers: {
+          Origin: "https://localhost", // Simular origen
+        },
+      }
+    );
+    //console.log(response.data);
+    return response.data; // Devuelve el resultado de la comparación
+  } catch (error) {
+    console.error("Error al comparar huellas:", error);
+    return { error: "Error al comparar huellas" };
   }
 });
 

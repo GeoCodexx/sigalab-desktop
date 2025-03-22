@@ -11,10 +11,15 @@ import {
 } from "@mui/material";
 import WaitingFingerImage from "../assets/waiting_finger.gif";
 import LoginImage from "../assets/6184159_3094350.svg";
-import { authenticateUser, dataUser } from "../services/user";
+import {
+  authenticateUser,
+  dataUser,
+  registerFingerprint,
+} from "../services/user";
 
 const Register = ({ setActiveView }) => {
   const [fingerprintImage, setFingerprintImage] = useState(null);
+  //const [fingerprintTemplate, setFingerprintTemplate] = useState(null);
   const [fingerprintStatus, setFingerprintStatus] = useState({
     type: "info",
     message: "Esperando huella...",
@@ -137,6 +142,7 @@ const Register = ({ setActiveView }) => {
     }
   };
 
+  //Escanear y enviar huella
   const handleFingerprintScan = async () => {
     setFingerprintStatus({
       type: "warning",
@@ -146,26 +152,54 @@ const Register = ({ setActiveView }) => {
     setFingerprintImage(null); // Limpia la imagen anterior
 
     try {
-      const response = await window.electron.invoke("capture-fingerprint"); // Simulación del backend
+      const response = await window.electron.invoke("capture-fingerprint"); // Simulación del escaneo
 
-      // Simular tiempo de escaneo de 3 segundos antes de mostrar la huella
-      setTimeout(() => {
+      setTimeout(async () => {
         setScanAnimation(false);
+
         if (response.ErrorCode === 0 && response.BMPBase64) {
-          setFingerprintImage(`data:image/bmp;base64,${response.BMPBase64}`);
-          
+          const fingerprintData = `data:image/bmp;base64,${response.BMPBase64}`;
+          setFingerprintImage(fingerprintData);
+          // setFingerprintTemplate(response.TemplateBase64);
           setFingerprintStatus({
             type: "success",
             message: "Huella escaneada con éxito",
           });
+
+          // Obtener el token del usuario autenticado
+          const token = localStorage.getItem("authTokenDesktop");
+          if (!token) {
+            setFingerprintStatus({
+              type: "error",
+              message: "Sesión expirada. Inicia sesión nuevamente.",
+            });
+            return;
+          }
+
+          // Enviar la huella escaneada al backend
+          try {
+            await registerFingerprint(
+              userData._id,
+              response.TemplateBase64,
+              token
+            );
+            setFingerprintStatus({
+              type: "success",
+              message: "Huella registrada correctamente.",
+            });
+          } catch (error) {
+            setFingerprintStatus({
+              type: "error",
+              message: "Error al registrar la huella en el servidor.",
+            });
+          }
         } else {
-          setUserData(null);
           setFingerprintStatus({
             type: "error",
             message: `Error al escanear huella. COD: ${response.ErrorCode}`,
           });
         }
-      }, 2000);
+      }, 2000); // Mantener la simulación de 2s
     } catch (error) {
       setScanAnimation(false);
       setFingerprintStatus({
@@ -180,7 +214,7 @@ const Register = ({ setActiveView }) => {
     if (hasFingerprint === true) {
       setTimeout(() => {
         setActiveView("home"); // Cambia la vista a Home
-      }, 2000);
+      }, 4000);
     }
   }, [hasFingerprint, setActiveView]);
 
@@ -309,7 +343,7 @@ const Register = ({ setActiveView }) => {
                 3. Haga click en el botón "CAPTURAR HUELLA".
               </Typography>
               <Typography margin={2}>
-                4. No retire el dedo hasta recibir la notificación respectiva.
+                4. No retire el dedo hasta recibir la confirmación respectiva.
               </Typography>
               <Button
                 variant="contained"
