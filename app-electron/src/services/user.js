@@ -52,14 +52,20 @@ export const dataUser = async () => {
  * @param {string} token - token de autenticacion de usuario.
  * @returns {Promise<object>} - Respuesta del backend.
  */
-export const registerFingerprint = async (userId, fingerprintTemplate, token) => {
+export const registerFingerprint = async (
+  userId,
+  fingerprintTemplate,
+  token
+) => {
   try {
     const response = await axios.post(
       `${API_URL}/users/register-fingerprint`,
       { userId, fingerprint: fingerprintTemplate },
       { headers: { Authorization: `Bearer ${token}` } } // Enviar token en la cabecera
     );
-    return response.data;
+    return response.status === 200
+      ? { success: true, ...response.data }
+      : response.data;
   } catch (error) {
     console.error(
       "Error al registrar huella:",

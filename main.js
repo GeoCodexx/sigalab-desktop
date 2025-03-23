@@ -10,7 +10,7 @@ let mainWindow;
 app.whenReady().then(() => {
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 700,
+    height: 535,
     webPreferences: {
       nodeIntegration: false, // Desactiva para mayor seguridad
       contextIsolation: true, // Activa para seguridad

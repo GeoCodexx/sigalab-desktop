@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 let theme = createTheme({
   // Theme customization goes here as usual, including tonalOffset and/or
@@ -13,10 +13,18 @@ theme = createTheme(theme, {
   palette: {
     teal: theme.palette.augmentColor({
       color: {
-        main: '#239086',
+        /*main: "#239086",*/
+        main: "#0a5c5c",
       },
-      name: 'teal',
+      name: "teal",
     }),
+    teallight: theme.palette.augmentColor({
+      color: {
+        main: "#239086",
+      },
+      name: "teallight",
+    }),
+    mode: "dark",
   },
 });
 

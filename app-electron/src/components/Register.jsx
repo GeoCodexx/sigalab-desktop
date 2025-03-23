@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { /* useEffect,*/ useState } from "react";
 import {
   TextField,
   Button,
@@ -34,6 +34,7 @@ const Register = ({ setActiveView }) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [hasFingerprint, setHasFingerprint] = useState(null);
   const [userData, setUserData] = useState({});
+  const [buttonState, setButtonState] = useState(false);
 
   const handleChange = (e) => {
     //setCredentials({ ...credentials, [e.target.name]: e.target.value });
@@ -144,6 +145,7 @@ const Register = ({ setActiveView }) => {
 
   //Escanear y enviar huella
   const handleFingerprintScan = async () => {
+    setLoading(true);
     setFingerprintStatus({
       type: "warning",
       message: "Escaneando... No retire el dedo.",
@@ -178,15 +180,24 @@ const Register = ({ setActiveView }) => {
 
           // Enviar la huella escaneada al backend
           try {
-            await registerFingerprint(
+            const rpta = await registerFingerprint(
               userData._id,
               response.TemplateBase64,
               token
             );
-            setFingerprintStatus({
-              type: "success",
-              message: "Huella registrada correctamente.",
-            });
+            if (rpta.success) {
+              setFingerprintStatus({
+                type: "success",
+                message: "Huella registrada correctamente.",
+              });
+              setButtonState(true);
+            } else {
+              setFingerprintStatus({
+                type: "warning",
+                message: rpta.message,
+              });
+              setButtonState(false);
+            }
           } catch (error) {
             setFingerprintStatus({
               type: "error",
@@ -207,16 +218,17 @@ const Register = ({ setActiveView }) => {
         message: "Error Server: No se pudo escanear la huella.",
       });
     }
+    setLoading(false);
   };
 
   // Redirigir a Home si el usuario no existe o ya tiene huella
-  useEffect(() => {
+  /*useEffect(() => {
     if (hasFingerprint === true) {
       setTimeout(() => {
         setActiveView("home"); // Cambia la vista a Home
       }, 4000);
     }
-  }, [hasFingerprint, setActiveView]);
+  }, [hasFingerprint, setActiveView]);*/
 
   return (
     <Grid2 container spacing={2}>
@@ -224,12 +236,13 @@ const Register = ({ setActiveView }) => {
       <Grid2 size={6} sx={{ p: 3 }}>
         <Card
           sx={{
-            backgroundColor: "#1e1e1e",
+            //backgroundColor: "#1e1e1e",
+            backgroundColor: "transparent",
             color: "#ABB2BF",
           }}
         >
           {!authenticated ? (
-            <CardContent>
+            <CardContent sx={{ backgroundColor: "#2A2A2A" }}>
               <Typography variant="h6" align="center">
                 Autenticación
               </Typography>
@@ -323,39 +336,76 @@ const Register = ({ setActiveView }) => {
                   color="teal"
                   fullWidth
                   disabled={loading}
+                  sx={{ marginTop: 2 }}
                 >
                   {loading ? <CircularProgress size={24} /> : "Ingresar"}
                 </Button>
               </form>
             </CardContent>
-          ) : (
-            <CardContent>
-              <Typography>{`Hola ${
-                userData?.name || "Anonimo"
-              }. Por favor siga estos pasos para el registro de su huella dactilar.`}</Typography>
-              <Typography margin={2}>
-                1. Limpie su dedo índice izquierdo con alcohol.
-              </Typography>
-              <Typography margin={2}>
-                2. Coloque su dedo en la superficie del lector biometrico.
-              </Typography>
-              <Typography margin={2}>
-                3. Haga click en el botón "CAPTURAR HUELLA".
-              </Typography>
-              <Typography margin={2}>
-                4. No retire el dedo hasta recibir la confirmación respectiva.
-              </Typography>
-              <Button
-                variant="contained"
-                color="teal"
-                fullWidth
-                disabled={loading}
-                sx={{ marginTop: 0 }}
-                onClick={handleFingerprintScan}
-              >
-                {loading ? <CircularProgress size={24} /> : "Capturar Huella"}
-              </Button>
+          ) : authenticated && !hasFingerprint ? (
+            <CardContent sx={{ backgroundColor: "#2A2A2A" }}>
+              {buttonState ? (
+                <>
+                  <Typography sx={{ color: "#8D939A" }} margin={4}>
+                    Ahora ya puedes marcar tu asistencia.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="teallight"
+                    fullWidth
+                    onClick={() => setActiveView("Home")}
+                  >
+                    Ir a inicio
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Typography sx={{ color: "#8D939A" }}>{`Hola ${
+                    userData?.name || "Anonimo"
+                  }. Por favor siga estos pasos para registrar su huella dactilar:`}</Typography>
+                  <Typography sx={{ color: "#8D939A" }} margin={2}>
+                    1. Limpie su dedo índice izquierdo con alcohol.
+                  </Typography>
+                  <Typography sx={{ color: "#8D939A" }} margin={2}>
+                    2. Coloque su dedo en el lector biometrico y presione el
+                    botón "Capturar huella".
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="teal"
+                    fullWidth
+                    disabled={loading}
+                    sx={{ marginTop: 0 }}
+                    onClick={handleFingerprintScan}
+                  >
+                    {loading ? (
+                      <CircularProgress color="teal" size={24} />
+                    ) : (
+                      "Capturar Huella"
+                    )}
+                  </Button>
+                </>
+              )}
             </CardContent>
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                paddingTop: "30px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#2A2A2A",
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="teallight"
+                onClick={() => setActiveView("Home")}
+              >
+                Regresar
+              </Button>
+            </div>
           )}
         </Card>
       </Grid2>
@@ -368,14 +418,27 @@ const Register = ({ setActiveView }) => {
         <Card
           sx={{
             /*backgroundColor: "#1e1e1e",*/
-            backgroundColor: "transparent",
             color: "#ABB2BF",
+            backgroundColor: "#2A2A2A",
           }}
         >
           <CardContent
-            style={{
-              textAlign: "center",
-            }}
+            sx={
+              authenticated
+                ? {
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }
+                : {
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "#2A2A2A",
+                  }
+            }
           >
             {/* <Typography variant="h5">Registro de Huella</Typography> */}
             {authenticated ? (
@@ -423,7 +486,8 @@ const Register = ({ setActiveView }) => {
               // <Typography variant="body1">
               //   Autentíquese para continuar
               // </Typography>
-              <img src={LoginImage} alt="Login Image" width={200} />
+
+              <img src={LoginImage} alt="Login Image" width={213} />
             )}
           </CardContent>
         </Card>

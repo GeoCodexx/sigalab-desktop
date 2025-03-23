@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import WaitingFingerImage from "../assets/waiting_finger.gif";
 import axios from "axios";
+import Alert from "@mui/material/Alert";
 
 const Home = () => {
   const [time, setTime] = useState(new Date());
@@ -117,6 +118,9 @@ const Home = () => {
       const template1 = scanResponse.TemplateBase64; // Huella escaneada
       setFingerprintStatus("Huella escaneada con éxito");
 
+      const fingerprintImageUser = `data:image/bmp;base64,${scanResponse.BMPBase64}`;
+      setFingerprintImage(fingerprintImageUser);
+
       // 2. Obtener todas las plantillas de usuarios desde la base de datos
       const usersResponse = await axios.get("http://localhost:3000/api/users");
       const users = usersResponse.data; // [{ id, name, template }, ...]
@@ -156,9 +160,7 @@ const Home = () => {
           id: bestMatch.dni,
           colaborador: `${bestMatch.patsurname} ${bestMatch.matsurname} ${bestMatch.name}`,
         });
-        setFingerprintStatus(
-          `Usuario identificado: ${bestMatch.name} ${bestMatch.patsurname} (Confianza: ${highestScore})`
-        );
+        setFingerprintStatus("Usuario identificado");
       } else {
         setUserData(null);
         setFingerprintStatus("No se encontró coincidencia.");
@@ -169,13 +171,14 @@ const Home = () => {
     }
   };
   return (
-    <div className="content-container">
-      <div className="left-column">
-        <div className="clock-container">
-          <h1 className="clock">{time.toLocaleTimeString()}</h1>
-          <p className="date">{getFormattedDate()}</p>
-        </div>
-        {/*<div className="buttons-container">
+    <>
+      <div className="content-container">
+        <div className="left-column">
+          <div className="clock-container">
+            <h1 className="clock">{time.toLocaleTimeString()}</h1>
+            <p className="date">{getFormattedDate()}</p>
+          </div>
+          {/*<div className="buttons-container">
             <button
               className="check-in-button"
               onClick={() => alert("Marcando INGRESO")}
@@ -189,49 +192,55 @@ const Home = () => {
               SALIDA
             </button>
           </div>*/}
-      </div>
+        </div>
 
-      <div className="right-column">
-        {/*<div
+        <div className="right-column">
+          {/*<div
             className={`fingerprint-section ${scanAnimation ? "scanning" : ""}`}
             onClick={handleFingerprintScan}
           >*/}
-        <p className="fingerprint-status">{fingerprintStatus}</p>
+          <p className="fingerprint-status">{fingerprintStatus}</p>
 
-        <div
-          className={`fingerprint-section ${scanAnimation ? "scanning" : ""} ${
-            fingerprintImage ? "fingerprint-detected" : ""
-          }`}
-          onClick={handleFingerprintScan}
-        >
-          <div className="fingerprint-icon">
-            {fingerprintImage ? (
-              <img
-                src={fingerprintImage}
-                alt="Huella escaneada"
-                className="fingerprint-image"
-              />
-            ) : (
-              <img
-                src={WaitingFingerImage}
-                alt="Imagen de espera"
-                className="fingerprint-image"
-              />
-            )}
+          <div
+            className={`fingerprint-section ${
+              scanAnimation ? "scanning" : ""
+            } ${fingerprintImage ? "fingerprint-detected" : ""}`}
+            onClick={handleFingerprintScan}
+          >
+            <div className="fingerprint-icon">
+              {fingerprintImage ? (
+                <img
+                  src={fingerprintImage}
+                  alt="Huella escaneada"
+                  className="fingerprint-image"
+                />
+              ) : (
+                <img
+                  src={WaitingFingerImage}
+                  alt="Imagen de espera"
+                  className="fingerprint-image"
+                />
+              )}
+            </div>
           </div>
+          {userData && (
+            <div className="user-data">
+              <p>
+                <strong>DNI:</strong> {userData.id}
+              </p>
+              <p>
+                <strong>Colaborador:</strong> {userData.colaborador}
+              </p>
+            </div>
+          )}
         </div>
-        {userData && (
-          <div className="user-data">
-            <p>
-              <strong>DNI:</strong> {userData.id}
-            </p>
-            <p>
-              <strong>Colaborador:</strong> {userData.colaborador}
-            </p>
-          </div>
-        )}
       </div>
-    </div>
+      <div className="alert-section">
+        <Alert severity="success">
+          This is a success Alert with warning colors.
+        </Alert>
+      </div>
+    </>
   );
 };
 
