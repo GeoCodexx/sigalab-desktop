@@ -122,24 +122,31 @@ export const compareFingerprint = async (
   }
 };
 
-/**
- * Compara una huella dactilar escaneada con la almacenada en la base de datos.
- * @param {string} userId - ID del usuario.
- * @param {string} scannedFingerprint - Imagen de la huella escaneada en Base64.
- * @returns {Promise<boolean>} - `true` si la huella coincide, `false` si no.
- */
-/*export const matchFingerprint = async (userId, scannedFingerprint) => {
+export const createAttendance = async (attendance) => {
   try {
-    const response = await axios.post(`${API_URL}/match-fingerprint`, {
-      userId,
-      fingerprint: scannedFingerprint,
-    });
-    return response.data.match; // Suponiendo que el backend responde con { match: true/false }
+    const response = await axios.post(`${API_URL}/attendances`, attendance);
+    if (response.status === 200 && response.data) {
+      return response.data;
+    } else {
+      throw new Error("Failed to register attendance data");
+    }
   } catch (error) {
-    console.error(
-      "Error en la comparación de huellas:",
-      error.response?.data || error.message
-    );
+    console.error("Error al registrar asistencia:", error);
     throw error.response?.data || error;
   }
-};*/
+};
+
+// Actualizar datos de Asistencia por ID
+export const updateAttendance = async (id, data) => {
+  try {
+    const resp = await axios.put(`${API_URL}/attendances/${id}`, data);
+    if (resp.status === 200 && resp.data) {
+      return resp.data;
+    } else {
+      throw new Error("Failed to edit attendance data");
+    }
+  } catch (error) {
+    console.error("Error al actualizar asistencia:", error);
+    throw error.response?.data || error;
+  }
+};

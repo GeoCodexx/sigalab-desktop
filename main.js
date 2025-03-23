@@ -25,7 +25,7 @@ app.whenReady().then(() => {
     mainWindow.loadFile(path.join(__dirname, "app-electron/dist/index.html"));
   }
   //Para abrir el devtool del navegador.
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.setMenuBarVisibility(false); // Barra Menu Oculto
 
   mainWindow.on("closed", () => {

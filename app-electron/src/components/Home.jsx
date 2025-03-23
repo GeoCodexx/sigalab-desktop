@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import WaitingFingerImage from "../assets/waiting_finger.gif";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
+import { createAttendance } from "../services/user";
 
 const Home = () => {
   const [time, setTime] = useState(new Date());
@@ -11,6 +12,8 @@ const Home = () => {
   const [userData, setUserData] = useState(null);
   const [scanAnimation, setScanAnimation] = useState(false);
   const [fingerprintImage, setFingerprintImage] = useState(null);
+  const [alertDynamic, setAlertDynamic] = useState({});
+
   // Actualizar el reloj cada segundo
   useEffect(() => {
     const timerID = setInterval(() => tick(), 1000);
@@ -158,16 +161,49 @@ const Home = () => {
       if (bestMatch && highestScore >= 100) {
         setUserData({
           id: bestMatch.dni,
-          colaborador: `${bestMatch.patsurname} ${bestMatch.matsurname} ${bestMatch.name}`,
+          name: `${bestMatch.patsurname} ${bestMatch.matsurname} ${bestMatch.name}`,
         });
         setFingerprintStatus("Usuario identificado");
+
+        //Registrar asistencia
+
+        const now = new Date();
+        const hours = now.getHours();
+        let attendanceStatus = "";
+
+        //Condicionales para determinar Entrada o Salida
+        /*checkIn: Entre 06:00-09:59 y 14:00-15:59.
+        checkOut: Entre 12:00-13:59 y 17:00-20:59.*/
+
+        if ((hours >= 6 && hours < 10) || (hours >= 14 && hours < 16)) {
+          attendanceStatus = "checkIn";
+        } else if ((hours >= 11 && hours < 14) || (hours >= 17 && hours < 21)) {
+          attendanceStatus = "checkOut";
+        }
+
+        //Fecha actual, debe ser del sistema y no local del computador
+        const resp = await createAttendance({
+          userId: bestMatch._id,
+          timestamp: now.toISOString(),
+          type: attendanceStatus,
+        });
+        setAlertDynamic({
+          severity: resp.success === true ? "success" : "warning",
+          message:
+            resp.success === true
+              ? resp.data
+                ? `${resp.message} | Estado: ${resp.data.status}`
+                : resp.message
+              : resp.message,
+        });
       } else {
         setUserData(null);
         setFingerprintStatus("No se encontró coincidencia.");
       }
     } catch (error) {
       setScanAnimation(false);
-      setFingerprintStatus(`Error: ${error.message}`);
+      setFingerprintStatus("Error en el servidor.");
+      alert(error.error);
     }
   };
   return (
@@ -205,6 +241,7 @@ const Home = () => {
             className={`fingerprint-section ${
               scanAnimation ? "scanning" : ""
             } ${fingerprintImage ? "fingerprint-detected" : ""}`}
+            style={{ width: fingerprintImage ? "100px" : "120px" }}
             onClick={handleFingerprintScan}
           >
             <div className="fingerprint-icon">
@@ -228,17 +265,15 @@ const Home = () => {
               <p>
                 <strong>DNI:</strong> {userData.id}
               </p>
-              <p>
-                <strong>Colaborador:</strong> {userData.colaborador}
+              <p style={{ lineHeight: 1.4 }}>
+                <strong>Usuario:</strong> {userData.name}
               </p>
             </div>
           )}
         </div>
       </div>
       <div className="alert-section">
-        <Alert severity="success">
-          This is a success Alert with warning colors.
-        </Alert>
+        <Alert severity={alertDynamic.severity}>{alertDynamic.message}</Alert>
       </div>
     </>
   );
