@@ -9,7 +9,7 @@ const Navbar = ({ activeView, setActiveView }) => {
             className={activeView === "home" ? "active" : ""}
             onClick={() => setActiveView("home")}
           >
-            Inicio
+            INICIO
           </button>
         </li>
         <li>
@@ -17,19 +17,24 @@ const Navbar = ({ activeView, setActiveView }) => {
             className={activeView === "register" ? "active" : ""}
             onClick={() => setActiveView("register")}
           >
-            Guardar Huella
+            GUARDAR HUELLA
           </button>
         </li>
         <li>
           <button
-            className={activeView === "report" ? "active" : ""}
-            onClick={() => setActiveView("report")}
+            className={activeView === "help" ? "active" : ""}
+            onClick={() => setActiveView("help")}
           >
-            Reportar Problema
+            AYUDA
           </button>
         </li>
         <li>
-          <button onClick={() => window.close()}>Salir</button>
+          <button
+            className={activeView === "about" ? "active" : ""}
+            onClick={() => setActiveView("about")}
+          >
+            ACERCA DE
+          </button>
         </li>
       </ul>
     </nav>

@@ -1,5 +1,5 @@
 require("dotenv").config();
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const axios = require("axios");
 const https = require("https");
 const path = require("path");
@@ -27,6 +27,33 @@ app.whenReady().then(() => {
   //Para abrir el devtool del navegador.
   //mainWindow.webContents.openDevTools();
   mainWindow.setMenuBarVisibility(false); // Barra Menu Oculto
+
+  // Manejar el evento de cerrar
+  mainWindow.on("close", (e) => {
+    // Solo si la ventana existe (para evitar errores)
+    if (!mainWindow) return;
+
+    // Enviamos mensaje al renderer para confirmar
+    mainWindow.webContents.send("confirm-close");
+    e.preventDefault(); // Previene el cierre inmediato
+  });
+
+  // Escuchar la respuesta del renderer
+  ipcMain.on("close-app", (_, shouldClose) => {
+    if (shouldClose) {
+      mainWindow = null;
+      mainWindow?.destroy(); // Opcional: forzar cierre si es necesario
+    }
+  });
+
+  // Manejar enlaces externos en ventanas
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (url.startsWith("http://") || url.startsWith("https://")) {
+      shell.openExternal(url);
+      return { action: "deny" }; // Evita que Electron abra la ventana
+    }
+    return { action: "allow" }; // Permite otros tipos de enlaces
+  });
 
   mainWindow.on("closed", () => {
     mainWindow = null;

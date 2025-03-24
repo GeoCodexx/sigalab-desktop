@@ -11,6 +11,24 @@ let theme = createTheme({
 theme = createTheme(theme, {
   // Custom colors created with augmentColor go here
   palette: {
+    mode: "dark",
+    primary: {
+      main: "#009688", // Teal
+      contrastText: "#ffffff", // Texto blanco para contraste
+    },
+    secondary: {
+      main: "#ff9800",
+    },
+    background: {
+      default: "#121212", // Fondo oscuro
+      paper: "#1e1e1e", // Fondo de componentes
+    },
+    text: {
+      primary: "rgba(255, 255, 255, 0.87)", // Textos principales en blanco "#ffffff"
+      secondary: "rgba(255, 255, 255, 0.6)", // Textos secundarios "rgba(255, 255, 255, 0.7)"
+      disabled: "rgba(255, 255, 255, 0.38)", // Textos deshabilitados "rgba(255, 255, 255, 0.5)"
+    },
+
     teal: theme.palette.augmentColor({
       color: {
         /*main: "#239086",*/
@@ -24,7 +42,9 @@ theme = createTheme(theme, {
       },
       name: "teallight",
     }),
-    mode: "dark",
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
   },
 });
 

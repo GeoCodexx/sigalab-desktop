@@ -198,12 +198,16 @@ const Home = () => {
         });
       } else {
         setUserData(null);
+        setAlertDynamic({});
         setFingerprintStatus("No se encontró coincidencia.");
       }
     } catch (error) {
       setScanAnimation(false);
-      setFingerprintStatus("Error en el servidor.");
-      alert(error.error);
+      setFingerprintStatus("Servidor no detectado");
+      setFingerprintImage(null);
+      error && setAlertDynamic({ severity: "error", message: error.message });
+      error.error &&
+        setAlertDynamic({ severity: "error", message: error.error });
     }
   };
   return (
@@ -272,9 +276,11 @@ const Home = () => {
           )}
         </div>
       </div>
-      <div className="alert-section">
-        <Alert severity={alertDynamic.severity}>{alertDynamic.message}</Alert>
-      </div>
+      {JSON.stringify(alertDynamic) !== "{}" && (
+        <div className="alert-section">
+          <Alert severity={alertDynamic.severity}>{alertDynamic.message}</Alert>
+        </div>
+      )}
     </>
   );
 };
