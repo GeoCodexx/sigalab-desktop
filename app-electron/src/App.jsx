@@ -12,19 +12,23 @@ const App = () => {
   const [showExitModal, setShowExitModal] = useState(false);
 
   useEffect(() => {
-    // Configurar el listener para el evento de confirmación
-    window.electron?.onConfirmClose(() => {
+    const handleConfirmClose = () => {
       setShowExitModal(true);
-    });
+    };
+
+    const cleanup = window.electron?.onConfirmClose(handleConfirmClose);
 
     return () => {
-      // Limpieza opcional (Electron normalmente maneja esto)
+      if (cleanup) cleanup();
     };
   }, []);
 
-  const handleConfirmExit = (shouldClose) => {
+  const handleExitConfirm = (shouldClose) => {
     setShowExitModal(false);
-    window.electron?.sendCloseResponse(shouldClose);
+    if (shouldClose) {
+      // Solo enviar una vez la confirmación
+      window.electron?.sendCloseResponse(true);
+    }
   };
 
   const renderView = () => {
@@ -46,9 +50,9 @@ const App = () => {
       <div className="app-container dark-theme">
         <Navbar activeView={activeView} setActiveView={setActiveView} />
         <div className="content">{renderView()}</div>
-        <footer className="footer">
+        {/* <footer className="footer">
           <p>&copy; {new Date().getFullYear()} Developed by GeoCodexx Design</p>
-        </footer>
+        </footer> */}
       </div>
       {/* Modal de confirmación con tema oscuro/teal */}
       {showExitModal && (
@@ -77,7 +81,7 @@ const App = () => {
                 variant="outlined"
                 color="teallight"
                 size="small"
-                onClick={() => handleConfirmExit(false)}
+                onClick={() => handleExitConfirm(false)}
               >
                 Cancelar
               </Button>
@@ -85,7 +89,7 @@ const App = () => {
                 variant="contained"
                 color="teal"
                 size="small"
-                onClick={() => handleConfirmExit(true)}
+                onClick={() => handleExitConfirm(true)}
               >
                 Salir
               </Button>

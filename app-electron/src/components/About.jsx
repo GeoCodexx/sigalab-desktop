@@ -144,9 +144,13 @@ const About = () => {
                 <Language />
               </Avatar>
             </ListItemAvatar>
+            {/**Para abrir links fuera de la app se controla en main.js de electron*/}
             <ListItemText
               primary={
-                <Link href="https://geocodexx.github.io/portfolio-project/" target="_blank">
+                <Link
+                  href="https://geocodexx.github.io/portfolio-project/"
+                  target="_blank"
+                >
                   www.geocodexx-solutions.com
                 </Link>
               }

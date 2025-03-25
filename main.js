@@ -6,11 +6,12 @@ const path = require("path");
 const querystring = require("querystring"); // Módulo para convertir objetos a URL-encoded
 
 let mainWindow;
+let isClosing = false; // Bandera para controlar el estado de cierre
 
 app.whenReady().then(() => {
   mainWindow = new BrowserWindow({
     width: 800,
-    height: 535,
+    height: 485,
     webPreferences: {
       nodeIntegration: false, // Desactiva para mayor seguridad
       contextIsolation: true, // Activa para seguridad
@@ -25,24 +26,22 @@ app.whenReady().then(() => {
     mainWindow.loadFile(path.join(__dirname, "app-electron/dist/index.html"));
   }
   //Para abrir el devtool del navegador.
-  //mainWindow.webContents.openDevTools();
+  /*mainWindow.webContents.openDevTools();*/
   mainWindow.setMenuBarVisibility(false); // Barra Menu Oculto
 
   // Manejar el evento de cerrar
   mainWindow.on("close", (e) => {
-    // Solo si la ventana existe (para evitar errores)
-    if (!mainWindow) return;
-
-    // Enviamos mensaje al renderer para confirmar
-    mainWindow.webContents.send("confirm-close");
-    e.preventDefault(); // Previene el cierre inmediato
+    if (!isClosing) {
+      e.preventDefault();
+      mainWindow.webContents.send("confirm-close");
+    }
   });
 
   // Escuchar la respuesta del renderer
   ipcMain.on("close-app", (_, shouldClose) => {
-    if (shouldClose) {
-      mainWindow = null;
-      mainWindow?.destroy(); // Opcional: forzar cierre si es necesario
+    if (shouldClose && mainWindow && !mainWindow.isDestroyed()) {
+      isClosing = true;
+      mainWindow.destroy();
     }
   });
 

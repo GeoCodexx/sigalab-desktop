@@ -3,6 +3,7 @@ import WaitingFingerImage from "../assets/waiting_finger.gif";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import { createAttendance } from "../services/user";
+import { Snackbar } from "@mui/material";
 
 const Home = () => {
   const [time, setTime] = useState(new Date());
@@ -13,12 +14,37 @@ const Home = () => {
   const [scanAnimation, setScanAnimation] = useState(false);
   const [fingerprintImage, setFingerprintImage] = useState(null);
   const [alertDynamic, setAlertDynamic] = useState({});
+  const [openAlerta, setOpenAlerta] = useState(false);
+  const [isScanning, setIsScanning] = useState(false); // Nuevo estado para controlar el escaneo
 
   // Actualizar el reloj cada segundo
   useEffect(() => {
     const timerID = setInterval(() => tick(), 1000);
     return () => clearInterval(timerID);
   }, []);
+
+  // Efecto para manejar la alerta automática
+  useEffect(() => {
+    let timeoutId;
+
+    // Solo actuar cuando datosHuella pasa de vacío a tener contenido
+    if (alertDynamic) {
+      setOpenAlerta(true); // Mostrar alerta
+
+      // Ocultar después de 5 segundos
+      timeoutId = setTimeout(() => {
+        setOpenAlerta(false);
+        setUserData(null); // Limpiar datos
+        setFingerprintStatus("Esperando huella...");
+        setFingerprintImage(null);
+      }, 10000);
+    }
+
+    // Limpieza del timeout si el componente se desmonta
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [alertDynamic]);
 
   const tick = () => {
     setTime(new Date());
@@ -106,6 +132,10 @@ const Home = () => {
     }
   };*/
   const handleFingerprintScan = async () => {
+    // Si ya está escaneando, no hacer nada
+    if (isScanning) return;
+
+    setIsScanning(true); // Bloquear el botón
     setFingerprintStatus("Escaneando...");
     setScanAnimation(true);
     setFingerprintImage(null); // Limpia la imagen anterior
@@ -175,9 +205,11 @@ const Home = () => {
         /*checkIn: Entre 06:00-09:59 y 14:00-15:59.
         checkOut: Entre 12:00-13:59 y 17:00-20:59.*/
 
-        if ((hours >= 6 && hours < 10) || (hours >= 14 && hours < 16)) {
+        if ((hours >= 0 && hours < 12) || (hours >= 14 && hours < 16)) {
           attendanceStatus = "checkIn";
-        } else if ((hours >= 11 && hours < 14) || (hours >= 17 && hours < 21)) {
+        } else if ((hours >= 12 && hours < 14) || (hours >= 17 && hours < 21)) {
+          attendanceStatus = "checkOut";
+        } else {
           attendanceStatus = "checkOut";
         }
 
@@ -196,15 +228,22 @@ const Home = () => {
                 : resp.message
               : resp.message,
         });
+        // Resetear después de 5 segundos (opcional)
+        setTimeout(() => {
+          setFingerprintImage(null);
+          setIsScanning(false);
+        }, 10000);
       } else {
         setUserData(null);
         setAlertDynamic({});
+        setIsScanning(false);
         setFingerprintStatus("No se encontró coincidencia.");
       }
     } catch (error) {
       setScanAnimation(false);
       setFingerprintStatus("Servidor no detectado");
       setFingerprintImage(null);
+      setIsScanning(false);
       error && setAlertDynamic({ severity: "error", message: error.message });
       error.error &&
         setAlertDynamic({ severity: "error", message: error.error });
@@ -276,11 +315,35 @@ const Home = () => {
           )}
         </div>
       </div>
-      {JSON.stringify(alertDynamic) !== "{}" && (
+      {/*JSON.stringify(alertDynamic) !== "{}" && (
         <div className="alert-section">
-          <Alert severity={alertDynamic.severity}>{alertDynamic.message}</Alert>
+          <Alert
+            severity={alertDynamic.severity}
+            onClose={() => setOpenAlerta(false)}
+          >
+            {alertDynamic.message}
+          </Alert>
         </div>
-      )}
+      )*/}
+
+      {/* Snackbar/MUI Alert */}
+      <div className="alert-section">
+        <Snackbar
+          open={openAlerta}
+          autoHideDuration={10000}
+          onClose={() => setOpenAlerta(false)}
+          anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+          sx={{ width: "90%" }}
+        >
+          <Alert
+            severity={alertDynamic.severity}
+            sx={{ width: "100%" }}
+            onClose={() => setOpenAlerta(false)}
+          >
+            {alertDynamic.message}
+          </Alert>
+        </Snackbar>
+      </div>
     </>
   );
 };

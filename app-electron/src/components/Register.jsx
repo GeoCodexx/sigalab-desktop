@@ -239,6 +239,7 @@ const Register = ({ setActiveView }) => {
             //backgroundColor: "#1e1e1e",
             backgroundColor: "transparent",
             color: "#ABB2BF",
+            boxShadow: "none",
           }}
         >
           {!authenticated ? (
