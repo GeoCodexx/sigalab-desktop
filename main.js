@@ -8,10 +8,13 @@ const querystring = require("querystring"); // Módulo para convertir objetos a 
 let mainWindow;
 let isClosing = false; // Bandera para controlar el estado de cierre
 
+//Cuando la app este lista crea una instancia de BrowserWindow para posteriormente cargar un archivo html o url
 app.whenReady().then(() => {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 485,
+    minWidth: 800,
+    minHeight: 485,
     webPreferences: {
       nodeIntegration: false, // Desactiva para mayor seguridad
       contextIsolation: true, // Activa para seguridad
@@ -95,14 +98,6 @@ ipcMain.handle("capture-fingerprint", async () => {
 // Manejador para comparar huellas dactilares
 ipcMain.handle("match-fingerprint", async (_, { template1, template2 }) => {
   try {
-    /* console.log("Comparando huellas...");
-    console.log("Template1 (capturado):", template1?.substring(0, 50), "..."); // Imprimir primeros 50 caracteres
-    console.log(
-      "Template2 (base de datos):",
-      template2?.substring(0, 50),
-      "..."
-    );*/
-
     const agent = new https.Agent({ rejectUnauthorized: false }); // Ignorar SSL
 
     // Convertir los parámetros a formato x-www-form-urlencoded

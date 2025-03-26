@@ -16,6 +16,7 @@ import {
   dataUser,
   registerFingerprint,
 } from "../services/user";
+import axios from "axios";
 
 const Register = ({ setActiveView }) => {
   const [fingerprintImage, setFingerprintImage] = useState(null);
@@ -143,8 +144,119 @@ const Register = ({ setActiveView }) => {
     }
   };
 
+  const scanFingerprint = async () => {
+    setFingerprintStatus({
+      type: "warning",
+      message: "Escaneando... No retire el dedo.",
+    });
+    setScanAnimation(true);
+    setFingerprintImage(null);
+
+    const response = await window.electron.invoke("capture-fingerprint");
+
+    setScanAnimation(false);
+
+    if (response.ErrorCode !== 0 || !response.BMPBase64) {
+      throw new Error(`Error al escanear huella. COD: ${response.ErrorCode}`);
+    }
+
+    return {
+      template: response.TemplateBase64,
+      image: `data:image/bmp;base64,${response.BMPBase64}`,
+    };
+  };
+
+  const fetchUsers = async () => {
+    const response = await axios.get("http://localhost:3000/api/users");
+    return response.data; // [{ id, fingerprintimage }, ...]
+  };
+
+  const isFingerprintDuplicate = async (newTemplate, users) => {
+    for (const user of users) {
+      if (!user.fingerprintimage) continue;
+
+      const matchResponse = await window.electron.invoke("match-fingerprint", {
+        template1: newTemplate,
+        template2: user.fingerprintimage,
+      });
+
+      if (matchResponse.ErrorCode === 0 && matchResponse.MatchingScore >= 100) {
+        return true; // Se encontró una coincidencia con una huella existente
+      }
+    }
+    return false;
+  };
+
+  const registerUserFingerprint = async (userId, template, token) => {
+    return await registerFingerprint(userId, template, token);
+  };
+
   //Escanear y enviar huella
-  const handleFingerprintScan = async () => {
+  const handleRegisterFingerprint = async () => {
+    setLoading(true);
+
+    try {
+      const { template, image } = await scanFingerprint();
+      setFingerprintImage(image);
+      setFingerprintStatus({
+        type: "success",
+        message: "Huella escaneada con éxito",
+      });
+
+      const users = await fetchUsers();
+      if (!users.length)
+        throw new Error("No hay usuarios registrados en la base de datos.");
+
+      // Validar si la huella ya está registrada
+      const isDuplicate = await isFingerprintDuplicate(template, users);
+      if (isDuplicate) {
+        setFingerprintStatus({
+          type: "error",
+          message: "Esta huella ya está registrada en otro usuario.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Obtener token de autenticación
+      const token = localStorage.getItem("authTokenDesktop");
+      if (!token) {
+        setFingerprintStatus({
+          type: "error",
+          message: "Sesión expirada. Inicia sesión nuevamente.",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Registrar huella en el backend
+      const response = await registerUserFingerprint(
+        userData._id,
+        template,
+        token
+      );
+      if (response.success) {
+        setFingerprintStatus({
+          type: "success",
+          message: "Huella registrada correctamente.",
+        });
+        setButtonState(true);
+      } else {
+        setFingerprintStatus({ type: "warning", message: response.message });
+        setButtonState(false);
+      }
+    } catch (error) {
+      setFingerprintStatus({
+        type: "error",
+        message: error.message || "Error al registrar la huella.",
+      });
+    }
+
+    setLoading(false);
+  };
+
+  //Escanear y enviar huella
+  /*const handleRegisterFingerprint = async () => {
     setLoading(true);
     setFingerprintStatus({
       type: "warning",
@@ -219,7 +331,7 @@ const Register = ({ setActiveView }) => {
       });
     }
     setLoading(false);
-  };
+  };*/
 
   // Redirigir a Home si el usuario no existe o ya tiene huella
   /*useEffect(() => {
@@ -377,7 +489,7 @@ const Register = ({ setActiveView }) => {
                     fullWidth
                     disabled={loading}
                     sx={{ marginTop: 0 }}
-                    onClick={handleFingerprintScan}
+                    onClick={handleRegisterFingerprint}
                   >
                     {loading ? (
                       <CircularProgress color="teal" size={24} />
@@ -461,7 +573,8 @@ const Register = ({ setActiveView }) => {
                     } ${fingerprintImage ? "fingerprint-detected" : ""}`}
                     style={{
                       marginTop: 20,
-                      //padding: 20,
+                      //padding: 20,style={{
+                      width: fingerprintImage ? "100px" : "120px",
                       borderRadius: 10,
                     }}
                   >
