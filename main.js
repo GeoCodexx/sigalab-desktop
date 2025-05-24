@@ -4,19 +4,21 @@ const axios = require("axios");
 const https = require("https");
 const path = require("path");
 const querystring = require("querystring"); // Módulo para convertir objetos a URL-encoded
+const Store = require("electron-store"); // Para almacenar el token localmente seguro
 
+const store = new Store();
 let mainWindow;
 let isClosing = false; // Bandera para controlar el estado de cierre
 
-//Cuando la app este lista crea una instancia de BrowserWindow para posteriormente cargar un archivo html o url
-app.whenReady().then(() => {
+function createMainWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 485,
     minWidth: 800,
     minHeight: 485,
+    resizable: false,
     webPreferences: {
-      nodeIntegration: false, // Desactiva para mayor seguridad
+      nodeIntegration: true, // Desactiva para mayor seguridad
       contextIsolation: true, // Activa para seguridad
       preload: path.join(__dirname, "preload.js"), // Asegurar la ruta correcta
     },
@@ -28,8 +30,10 @@ app.whenReady().then(() => {
   } else {
     mainWindow.loadFile(path.join(__dirname, "app-electron/dist/index.html"));
   }
+  
   //Para abrir el devtool del navegador.
-  /*mainWindow.webContents.openDevTools();*/
+  mainWindow.webContents.openDevTools();
+  
   mainWindow.setMenuBarVisibility(false); // Barra Menu Oculto
 
   // Manejar el evento de cerrar
@@ -60,6 +64,48 @@ app.whenReady().then(() => {
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+}
+
+function createLoginWindow() {
+  const loginWindow = new BrowserWindow({
+    width: 800,
+    height: 485,
+    resizable: false,
+    webPreferences: {
+      nodeIntegration: true, // Se cambio a true para que funcione electron-store en preload.js
+      contextIsolation: true,
+      preload: path.join(__dirname, "preload.js"),
+    },
+  });
+
+  //loginWindow.webContents.openDevTools();
+
+  if (process.env.VITE_DEV_SERVER_URL) {
+    loginWindow.loadURL(`${process.env.VITE_DEV_SERVER_URL}/#/device-login`);
+  } else {
+    loginWindow.loadFile(
+      path.join(__dirname, "app-electron/dist/device-login.html")
+    );
+  }
+
+  loginWindow.setMenuBarVisibility(false);
+
+  // Espera a que el renderer diga que se autenticó y debe abrir la app principal
+  ipcMain.once("device-authenticated", () => {
+    loginWindow.close();
+    createMainWindow();
+  });
+}
+
+//Cuando la app este lista crea una instancia de BrowserWindow para posteriormente cargar un archivo html o url
+app.whenReady().then(() => {
+  const token = store.get("deviceToken");
+
+  if (!token) {
+    createLoginWindow();
+  } else {
+    createMainWindow();
+  }
 });
 
 //Permitir Certificados Autofirmados en Electron

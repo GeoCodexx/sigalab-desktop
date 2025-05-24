@@ -1,15 +1,24 @@
 import React, { useEffect, useState } from "react";
 import "./App.css";
-import Navbar from "./components/NavBar";
+import Navbar from "./components/Navbar";
 import Home from "./components/Home";
 import Register from "./components/Register";
 import { Button } from "@mui/material";
 import Help from "./components/Help";
 import About from "./components/About";
+import DeviceLogin from "./components/DeviceLogin";
 
 const App = () => {
   const [activeView, setActiveView] = useState("home");
   const [showExitModal, setShowExitModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = window.electronStore.get("deviceToken");
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   useEffect(() => {
     const handleConfirmClose = () => {
@@ -45,6 +54,11 @@ const App = () => {
         return <Home />;
     }
   };
+
+  if (!isAuthenticated) {
+    return <DeviceLogin onAuthenticated={() => setIsAuthenticated(true)} />;
+  }
+
   return (
     <>
       <div className="app-container dark-theme">

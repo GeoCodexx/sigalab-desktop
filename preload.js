@@ -1,4 +1,17 @@
 const { contextBridge, ipcRenderer } = require("electron");
+//const Store = require("electron-store");
+let store;
+try {
+  const Store = require("electron-store").default;
+  store = new Store();
+} catch (err) {
+  console.error("Error al inicializar electron-store:", err);
+}
+
+contextBridge.exposeInMainWorld("electronStore", {
+  get: (key) => store.get(key),
+  set: (key, value) => store.set(key, value),
+});
 
 contextBridge.exposeInMainWorld("electron", {
   invoke: (channel, data) => ipcRenderer.invoke(channel, data),
@@ -8,6 +21,9 @@ contextBridge.exposeInMainWorld("electron", {
   onConfirmClose: (callback) => {
     ipcRenderer.on("confirm-close", callback);
     return () => ipcRenderer.removeListener("confirm-close", callback);
+  },
+  ipcRenderer: {
+    send: (channel, data) => ipcRenderer.send(channel, data),
   },
 });
 

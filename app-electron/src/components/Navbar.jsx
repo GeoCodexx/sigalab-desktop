@@ -1,5 +1,3 @@
-import React from "react";
-
 const Navbar = ({ activeView, setActiveView }) => {
   return (
     <nav className="menu-navbar">

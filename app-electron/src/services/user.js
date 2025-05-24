@@ -124,7 +124,7 @@ export const compareFingerprint = async (
 
 export const createAttendance = async (attendance) => {
   try {
-    const response = await axios.post(`${API_URL}/attendances`, attendance);
+    const response = await axios.post(`${API_URL}/attendances/markattendance`, attendance);
     if (response.status === 200 && response.data) {
       return response.data;
     } else {
@@ -139,7 +139,7 @@ export const createAttendance = async (attendance) => {
 // Actualizar datos de Asistencia por ID
 export const updateAttendance = async (id, data) => {
   try {
-    const resp = await axios.put(`${API_URL}/attendances/${id}`, data);
+    const resp = await axios.put(`${API_URL}/attendances/markattendance/${id}`, data);
     if (resp.status === 200 && resp.data) {
       return resp.data;
     } else {

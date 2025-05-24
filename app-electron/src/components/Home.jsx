@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import WaitingFingerImage from "../assets/waiting_finger.gif";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
@@ -37,9 +37,9 @@ const Home = () => {
       timeoutId = setTimeout(() => {
         setOpenAlerta(false);
         setUserData(null); // Limpiar datos
-        setFingerprintStatus("Esperando huella...");
-        setFingerprintImage(null);
-      }, 7000);
+        /*  setFingerprintStatus("Esperando huella...");
+        setFingerprintImage(null);*/
+      }, 5000);
     }
 
     // Limpieza del timeout si el componente se desmonta
@@ -158,7 +158,7 @@ const Home = () => {
 
       const matchedUser = await matchFingerprint(template, users);
 
-      setScanAnimation(false);
+      //setScanAnimation(false);
       if (matchedUser) {
         setUserData({
           id: matchedUser.dni,
@@ -180,12 +180,13 @@ const Home = () => {
 
         playSound(response.success ? "success" : "error");
         setFingerprintStatus("Usuario identificado");
-        setTimeout(resetScanner, 7000);
+        setTimeout(resetScanner, 5000);
       } else {
         setFingerprintStatus("No se encontró coincidencia");
         playSound("error");
-        setTimeout(resetScanner, 7000);
+        setTimeout(resetScanner, 5000);
       }
+      setScanAnimation(false);
     } catch (error) {
       setScanAnimation(false);
       setFingerprintStatus("Error detectado");
@@ -243,7 +244,7 @@ const Home = () => {
               </p>
             </div>
           ) : (
-            <div>
+            <div style={{ width: "100%", textAlign: "center" }}>
               <p className="fingerprint-status">{fingerprintStatus}</p>
             </div>
           )}
@@ -253,7 +254,7 @@ const Home = () => {
       <div className="alert-section">
         <Snackbar
           open={openAlerta}
-          autoHideDuration={7000}
+          autoHideDuration={5000}
           onClose={() => setOpenAlerta(false)}
           anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
           sx={{ width: "94%" }}
