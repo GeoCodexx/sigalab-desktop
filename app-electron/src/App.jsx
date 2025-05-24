@@ -7,6 +7,7 @@ import { Button } from "@mui/material";
 import Help from "./components/Help";
 import About from "./components/About";
 import DeviceLogin from "./components/DeviceLogin";
+import { isTokenExpired } from "./utils/tokenUtils";
 
 const App = () => {
   const [activeView, setActiveView] = useState("home");
@@ -15,9 +16,14 @@ const App = () => {
 
   useEffect(() => {
     const token = window.electronStore.get("deviceToken");
-    if (token) {
+    if (!token || isTokenExpired(token)) {
+      setIsAuthenticated(false);
+    } else {
       setIsAuthenticated(true);
     }
+    /*if (token) {
+      setIsAuthenticated(true);
+    }*/
   }, []);
 
   useEffect(() => {

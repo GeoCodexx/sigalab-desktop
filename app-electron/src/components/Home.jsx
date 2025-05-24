@@ -96,8 +96,30 @@ const Home = () => {
   };
 
   const fetchUsers = async () => {
-    const response = await axios.get("http://localhost:3000/api/users");
-    return response.data; // [{ id, name, fingerprintimage }, ...]
+    try {
+      // Obtener token desde electron-store expuesto vía preload.js
+      const token = window.electronStore.get("deviceToken");
+
+      if (!token) {
+        //setError("Token no encontrado. El dispositivo no está autenticado.");
+        alert("Token no encontrado. El dispositivo no está autenticado.");
+        return;
+      }
+
+      const response = await axios.get(
+        "http://localhost:3000/api/users/desktop-app",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data; // [{ id, name, fingerprintimage }, ...]
+    } catch (err) {
+      console.error("Error al consultar usuarios:", err);
+      //setError(err.message);
+      alert(err.message);
+    }
   };
 
   const matchFingerprint = async (template, users) => {
@@ -166,17 +188,42 @@ const Home = () => {
         });
 
         const attendanceType = determineAttendanceType();
+
         const response = await registerAttendance(
           matchedUser._id,
           attendanceType
         );
 
+        // Determinar la severidad basada en la respuesta
+        let severity = "error";
+
+        if (response.success) {
+          const status = response?.data?.status;
+          if (status === "A tiempo") {
+            severity = "success";
+          } else if (status === "Tarde") {
+            severity = "warning";
+          } else {
+            severity = "info"; // Opcional: para otros estados no contemplados
+          }
+        }
         setAlertDynamic({
-          severity: response.success ? "success" : "warning",
+          severity,
           message: response.data
-            ? `${response.message} | Estado: ${response.data?.status}`
+            ? `${
+                response.message
+              } | Estado: ${response.data?.status.toUpperCase()}`
             : response.message,
         });
+
+        /* setAlertDynamic({
+          severity: response.success ? "success" : "warning",
+          message: response.data
+            ? `${
+                response.message
+              } | Estado: ${response.data?.status.toUpperCase()}`
+            : response.message,
+        });*/
 
         playSound(response.success ? "success" : "error");
         setFingerprintStatus("Usuario identificado");

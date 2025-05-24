@@ -16,7 +16,7 @@ function createMainWindow() {
     height: 485,
     minWidth: 800,
     minHeight: 485,
-    resizable: false,
+    //resizable: false,
     webPreferences: {
       nodeIntegration: true, // Desactiva para mayor seguridad
       contextIsolation: true, // Activa para seguridad
@@ -32,7 +32,7 @@ function createMainWindow() {
   }
   
   //Para abrir el devtool del navegador.
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   
   mainWindow.setMenuBarVisibility(false); // Barra Menu Oculto
 

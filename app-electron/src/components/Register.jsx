@@ -166,9 +166,35 @@ const Register = ({ setActiveView }) => {
     };
   };
 
-  const fetchUsers = async () => {
-    const response = await axios.get("http://localhost:3000/api/users");
+  /* const fetchUsers = async () => {
+    const response = await axios.get("http://localhost:3000/api/users/desktop-app");
     return response.data; // [{ id, fingerprintimage }, ...]
+  };*/
+  const fetchUsers = async () => {
+    try {
+      // Obtener token desde electron-store expuesto vía preload.js
+      const token = window.electronStore.get("deviceToken");
+
+      if (!token) {
+        //setError("Token no encontrado. El dispositivo no está autenticado.");
+        alert("Token no encontrado. El dispositivo no está autenticado.");
+        return;
+      }
+
+      const response = await axios.get(
+        "http://localhost:3000/api/users/desktop-app",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      return response.data; // [{ id, name, fingerprintimage }, ...]
+    } catch (err) {
+      console.error("Error al consultar usuarios:", err);
+      //setError(err.message);
+      alert(err.message);
+    }
   };
 
   const isFingerprintDuplicate = async (newTemplate, users) => {
