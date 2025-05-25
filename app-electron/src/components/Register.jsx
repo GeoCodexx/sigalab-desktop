@@ -472,7 +472,7 @@ const Register = ({ setActiveView }) => {
                 <Button
                   type="submit"
                   variant="contained"
-                  color="teal"
+                  color="primary"
                   fullWidth
                   disabled={loading}
                   sx={{ marginTop: 2 }}

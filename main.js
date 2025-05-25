@@ -8,6 +8,7 @@ const Store = require("electron-store"); // Para almacenar el token localmente s
 
 const store = new Store();
 let mainWindow;
+let loginWindow;
 let isClosing = false; // Bandera para controlar el estado de cierre
 
 function createMainWindow() {
@@ -30,10 +31,10 @@ function createMainWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, "app-electron/dist/index.html"));
   }
-  
+
   //Para abrir el devtool del navegador.
   //mainWindow.webContents.openDevTools();
-  
+
   mainWindow.setMenuBarVisibility(false); // Barra Menu Oculto
 
   // Manejar el evento de cerrar
@@ -67,7 +68,7 @@ function createMainWindow() {
 }
 
 function createLoginWindow() {
-  const loginWindow = new BrowserWindow({
+  loginWindow = new BrowserWindow({
     width: 800,
     height: 485,
     resizable: false,
@@ -94,6 +95,26 @@ function createLoginWindow() {
   ipcMain.once("device-authenticated", () => {
     loginWindow.close();
     createMainWindow();
+  });
+
+  // Manejar el evento de cerrar
+  loginWindow.on("close", (e) => {
+    if (!isClosing) {
+      e.preventDefault();
+      loginWindow.webContents.send("confirm-close");
+    }
+  });
+
+  // Escuchar la respuesta del renderer
+  ipcMain.on("close-app", (_, shouldClose) => {
+    if (shouldClose && loginWindow && !loginWindow.isDestroyed()) {
+      isClosing = true;
+      loginWindow.destroy();
+    }
+  });
+
+  loginWindow.on("closed", () => {
+    loginWindow = null;
   });
 }
 

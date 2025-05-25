@@ -13,9 +13,22 @@ theme = createTheme(theme, {
   palette: {
     mode: "dark",
     primary: {
-      main: "#009688", // Teal
-      contrastText: "#ffffff", // Texto blanco para contraste
+      main: "#00695c", // Teal 800 de Material Design — oscuro, profesional y elegante
+      light: "#439889", // Su versión suavizada para hover
+      dark: "#003d33", // Profundo para estados activos
+      contrastText: "#ffffff", // Asegura visibilidad del texto sobre botones
     },
+    /*primary: {
+      main: "#009688",
+      light: "#33ab9f",
+      dark: "#00695c",
+      contrastText: "#ffffff",
+    },*/
+    /*primary: {
+      main: "#009688", // Teal
+      light: "#33ab9f", // Color en hover
+      contrastText: "#ffffff", // Texto blanco para contraste
+    },*/
     secondary: {
       main: "#ff9800",
     },
